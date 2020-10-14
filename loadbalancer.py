@@ -44,7 +44,9 @@ class LoadBalancer:
 
   def get(self):
     print("Hi, I'm the load balancer!")
-    self.advancedGet()
+    #No reason to call the advancedGet if there are 0 providers
+    if len(self._registeredProviders) > 0:
+      self.advancedGet()
 
   def roundRobinGet(self):
     self._roundRobinCounter += 1
@@ -87,7 +89,12 @@ class LoadBalancer:
       self._registeredProviders.append(provider)
       self._queue[provider] = provider.getNbJobs()
       print(provider.get(),"successfully registered")
+
   def unregister(self,provider):
+    #fix to not break the round-robin in case we remove the provider the counter is pointing to
+    if self._roundRobinCounter != -1:
+      if provider is self._registeredProviders[self._roundRobinCounter]:
+        self._roundRobinCounter -= 1
     self._registeredProviders.remove(provider)
     del self._queue[provider]
     print(provider.get(),"removed by the registered providers.")
