@@ -4,6 +4,7 @@ import random
 import threading
 
 class LoadBalancer:
+  __instance = None
   _registeredProviders = []
   _possiblyDeadProviders = {}
   _blacklist = []
@@ -14,11 +15,21 @@ class LoadBalancer:
   _maxReqPerProvider = 3
   _queue = {}
 
+  #Singleton
+  def getInstance():
+    if LoadBalancer.__instance == None:
+      LoadBalancer()
+    return LoadBalancer.__instance
   def __init__(self):
-    print("Load Balancer created!")
-    thread = threading.Thread(target=self.heartbeat_check, args=())
-    thread.daemon = True
-    thread.start()
+    if LoadBalancer.__instance != None:
+      print("It is possible to have only one LoadBalancer.. use getInstance method")
+      return
+    else:
+      LoadBalancer.__instance = self
+      print("Load Balancer created!")
+      thread = threading.Thread(target=self.heartbeat_check, args=())
+      thread.daemon = True
+      thread.start()
   
   #this is a thread running in background
   def heartbeat_check(self):
